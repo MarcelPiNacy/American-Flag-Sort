@@ -28,36 +28,38 @@
 
 #pragma once
 #include <iterator>
+#include <bitset>
+#include <cstdint>
 
 namespace detail::american_flag_sort
 {
 	template <size_t RadixSize, typename I, typename F>
 	constexpr void american_flag_sort_core(I begin, I end, size_t digit_index, F& extract_digit)
 	{
-		size_t counts[RadixSize];
+		// Note: the offsets and next arrays can be marked as static thread_local to minimize stack space.
+
+		std::bitset<RadixSize> presence;
+		size_t counts[RadixSize] = {};
+		size_t offsets[RadixSize];
+		size_t next[RadixSize];
 
 		while (true)
 		{
-			std::fill(std::begin(counts), std::end(counts), 0);
 			for (I i = begin; i < end; ++i)
-				++counts[extract_digit(*i, digit_index)];
-			uint_fast16_t used_count = 0;
-			for (size_t k : counts)
-				used_count += (k != 0);
-			if (used_count > 1)
+			{
+				const auto digit = extract_digit(*i, digit_index);
+				presence.set(digit);
+				++counts[digit];
+			}
+			if (presence.count() > 1)
 				break;
 			--digit_index;
+			presence.reset();
+			std::fill(std::begin(counts), std::end(counts), 0);
 		}
 
-		// Note: the offsets and next arrays can be marked as static thread_local.
-
-		//static thread_local
-		size_t offsets[RadixSize];
-		//static thread_local
-		size_t next[RadixSize];
-
 		size_t offset = 0;
-		for (uint_least16_t i = 0; i < RadixSize; ++i)
+		for (uint_fast16_t i = 0; i < RadixSize; ++i)
 		{
 			offsets[i] = offset;
 			offset += counts[i];
