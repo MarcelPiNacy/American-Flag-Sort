@@ -1,7 +1,7 @@
 /*
 	BSD 2-Clause License
 	
-	Copyright (c) 2020, Marcel Pi Nacy
+	Copyright (c) 2022, Marcel Pi Nacy
 	All rights reserved.
 	
 	Redistribution and use in source and binary forms, with or without
